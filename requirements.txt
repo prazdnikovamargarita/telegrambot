@@ -1,6 +1,3 @@
-django
-gunicorn
-django-heroku
 Flask==0.8
 Jinja2==2.6
 Werkzeug==0.8.3
