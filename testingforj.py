@@ -1,11 +1,40 @@
 import telebot
 from telebot import *
+import requests
+
+url = "https://api.telegram.org/bot1032107096:AAHIJN5w49DL0xYaKpOo6YQ6ZO0MOvweOeg/"
+
+
+
 bot = telebot.TeleBot('1032107096:AAHIJN5w49DL0xYaKpOo6YQ6ZO0MOvweOeg')
 name = ''
 surname = ''
 age = 0
 stut = True
 @bot.message_handler(commands=['start'])
+def get_updates_json(request):  
+    response = requests.get(request + 'getUpdates')
+    return response.json()
+
+
+def last_update(data):  
+    results = data['result']
+    total_updates = len(results) - 1
+    return results[total_updates]
+def get_chat_id(update):  
+    chat_id = update['message']['chat']['id']
+    return chat_id
+
+def send_mess(chat, text):  
+    params = {'chat_id': chat, 'text': text}
+    response = requests.post(url + 'sendMessage', data=params)
+    return response
+
+chat_id = get_chat_id(last_update(get_updates_json(url)))
+send_mess(chat_id, 'Your message goes here')
+
+
+
 def start(message):
     
     hide_markup = telebot.types.ReplyKeyboardRemove()
