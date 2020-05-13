@@ -1,3 +1,2 @@
-requests
 TelegramBotAPI==3.6.6
 
