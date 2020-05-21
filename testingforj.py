@@ -41,7 +41,7 @@ def process_age_step(message):
     try:
         chat_id = message.chat.id
         age = message.text
-        if not age.isdigit() and age == 0:
+        if not age.isdigit() or age == 0:
             msg = bot.reply_to(message, 'Возвраст должен быть цифрой и не равен 0. Повторите попытку')
             bot.register_next_step_handler(msg, process_age_step)
             return
@@ -135,7 +135,7 @@ def new_age(message):
               
     else:
         age = str(age)
-        if not age.isdigit() and age == 0:
+        if not age.isdigit() age age == "0":
             msg = bot.reply_to(message, 'Возраст должен быть цифрой и не равен 0. Повторите попытку?')
             bot.register_next_step_handler(msg, new_age)
             return
