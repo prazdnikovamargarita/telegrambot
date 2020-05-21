@@ -6,18 +6,17 @@ import requests
 bot = telebot.TeleBot(config.token)
 
 HIDE_MARKUP = telebot.types.ReplyKeyboardRemove()
-KEYBOARD = types.InlineKeyboardMarkup()
-KEY_YES = types.InlineKeyboardButton(text='Женщина', callback_data='yes') #кнопка «Да»
-KEYBOARD.add(KEY_YES) #добавляем кнопку в клавиатуру
-KEY_NO= types.InlineKeyboardButton(text='Мужчина', callback_data='no')
-KEYBOARD.add(KEY_NO)
-QUESTION = 'Твой пол?'
-USER_MARKUP = telebot.types.ReplyKeyboardMarkup()
-USER_MARKUP_FOR_SETTINGS = telebot.types.ReplyKeyboardMarkup()
-USER_MARKUP_FOR_SETTINGS.row('Изменить имя', 'Изменить возраст', 'Изменить пол')
-USER_MARKUP_FOR_SETTINGS.row('Назад')
-USER_MARKUP.row('Настройки', 'Функции бота')
-name = ''
-age = 0
-stut = ''
+markup_for_function = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True,row_width=2 )
+markup_for_function.add('Настройки', 'Функции бота')
 
+markup_for_setting = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True)
+markup_for_setting.add('Изменить имя', 'Изменить возраст', 'Изменить пол')
+markup_for_setting.add('Назад')
+
+
+markup_for_sex = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True)
+markup_for_sex.add('Мужской', 'Женский')
+markup_for_sex.add('Назад в настройки', 'Назад в функции')
+
+markup = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True,row_width=2 )
+markup.add('Мужской', 'Женский')

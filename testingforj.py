@@ -1,147 +1,193 @@
 from constans import *
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(message.from_user.id, "Как тебя зовут?",  reply_markup = HIDE_MARKUP)
-    bot.register_next_step_handler(message, get_name) 
-
-def get_name(message): 
-    global name
-    name = str(message.text)
-    len_name = (len (name))
-    if len_name  < 2 or len_name > 20:
-        bot.send_message(message.from_user.id, '''Имя должно быть от 2 до 20 символов и не пустым.
-                                                Введите свое имя еще раз''',  reply_markup = HIDE_MARKUP)
-        bot.register_next_step_handler(message,get_name)
-    else: 
-        bot.send_message(message.from_user.id, 'Сколько тебе лет?',  reply_markup = HIDE_MARKUP)
-        bot.register_next_step_handler(message, get_age)
-        return name
-
-def get_age(message):
-    handle_text(message)
-    global age
-    age = message.text #проверяем, что возраст введен корректно
-    if age.isdigit():
-        bot.send_message(message.from_user.id, text=QUESTION, reply_markup=KEYBOARD)
-        return age
-    else:
-        bot.send_message(message.from_user.id, '''Возраст должен быть написан цифрами. 
-                                    Повторите пожалуйста попытку''',  
-                                    reply_markup = HIDE_MARKUP)
-        bot.register_next_step_handler(message,get_age)
+user_dict = {}
 
 
-def bots_function(message):
-    bot.send_message(message.from_user.id, f'Привет {name} ты {age} тебе {stut}',
-                                                reply_markup=USER_MARKUP)
-    bot.send_message(message.from_user.id, """Functions of bot """, 
-                                                reply_markup= USER_MARKUP)
+class User:
+    def __init__(self, name):
+        self.name = name
+        self.age = None
+        self.sex = None
 
-def bo_set(message):  
-    bot.send_message(message.from_user.id, 'Напиши свои изменения', 
-                                            reply_markup=USER_MARKUP_FOR_SETTINGS)
-    bot.register_next_step_handler(message, handle_text)
 
-def up_name(message):
-    
-    
-    if  message.text == 'Изменить возраст':
-        return up_age(message)
-    elif  message.text == 'Изменить пол':
-        return up_stut(message)
-    elif  message.text == 'Назад':
-        return bots_function(message)
-    else:
-        bot.send_message(message.from_user.id, "Как тебя зовут?",  
-                                                reply_markup =USER_MARKUP_FOR_SETTINGS)
-        bot.register_next_step_handler(message, get_update_name) #следующий шаг – функция get_name
+# Handle '/start' and '/help'
+@bot.message_handler(commands=['help', 'start'], regexp='/start')
+@bot.message_handler(regexp='/start')
+def send_welcome(message):
+    msg = bot.reply_to(message, """\
+Привет, как тебя зовут?
+""")
+    bot.register_next_step_handler(msg, process_name_step)
 
-def get_update_name (message):
-    global name
-    name = str(message.text)
-    len_name = (len (name))
-    if len_name  < 2 or len_name > 20:
-        bot.send_message(message.from_user.id, '''Имя должно быть от 2 до 20 символов и не пустым. 
-                                        Введите свое имя еще раз''')
-        bot.register_next_step_handler(message,get_update_name)
-    else:
-        bot.register_next_step_handler(message, up_age)
 
-def up_age(message):
-    if message.text == 'Изменить имя':
-        return up_name(message)
-    elif  message.text == 'Изменить пол':
-        return up_stut(message)
-    elif  message.text == 'Назад':
-        return bots_function(message)
-    else:
-        bot.send_message(message.from_user.id, "Сколько тебе лет?",  
-                                                reply_markup = USER_MARKUP_FOR_SETTINGS)
-        bot.register_next_step_handler(message, get_update_age) #следующий шаг – функция get_name
+def process_name_step(message):
+    try:
+        
+        chat_id = message.chat.id
+        name = str(message.text)
+        if len(name) <3 or len(name)>20:
+            msg = bot.reply_to(message, 'Имя должно быть длинее 2 и меньше 20. Повторите попытку ввода')
+            bot.register_next_step_handler(msg, process_name_step)
+            return
+        user = User(name)
+        user_dict[chat_id] = user
+        msg = bot.reply_to(message, 'Сколько лет?')
+        bot.register_next_step_handler(msg, process_age_step)
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
 
-def get_update_age (message):
-    handle_text(message)
-    global age
-    age = message.text
-    if  message.text == 'Изменить возраст':
-            return up_age(message)
-    elif  message.text == 'Изменить пол':
-        return up_stut(message)
-    elif  message.text == 'Назад':
-        return bots_function(message)
-    else:
-        if age.isdigit():
-            bot.register_next_step_handler(message, up_stut)
+
+def process_age_step(message):
+    try:
+        chat_id = message.chat.id
+        age = message.text
+        if not age.isdigit():
+            msg = bot.reply_to(message, 'Возвраст должен быть цифрой. Повторите попытку')
+            bot.register_next_step_handler(msg, process_age_step)
+            return
+        user = user_dict[chat_id]
+        user.age = age
+        
+        msg = bot.reply_to(message, 'Какой пол?', reply_markup=markup)
+        bot.register_next_step_handler(msg, process_sex_step)
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
+
+
+def process_sex_step(message):
+    try:
+        chat_id = message.chat.id
+        sex = message.text
+        user = user_dict[chat_id]
+        if (sex == u'Мужской') or (sex == u'Женский'):
+            user.sex = sex
         else:
-            bot.send_message(message.from_user.id, '''Возраст должен быть написан цифрами. 
-                                        Повторите пожалуйста попытку''')
-            bot.register_next_step_handler(message,get_update_age)
+            raise Exception()
+        bot.send_message(chat_id, '\n Пол:' + user.sex)
+        bots_function(message)
+    except Exception as e:
+        bot.reply_to(message, 'oooops')
 
 
-def up_stut(message):
-    if message.text == 'Изменить имя':
-        return up_name(message)
-    elif  message.text == 'Изменить возраст':
-        return up_age(message)
-    elif  message.text == 'Назад':
-        return bots_function(message)
+@bot.message_handler(regexp="Функции бота")
+def bots_function(message):
+    
+    chat_id = message.chat.id
+    g = message.text
+    user = user_dict[chat_id] 
+    bot.send_message(chat_id, f'Nice to meet you {user.name} \n Age: {user.age} \n Sex: {user.sex}', reply_markup=markup_for_function )
+
+@bot.message_handler(regexp="Настройки")
+def bots_setting(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id , 'Nice to meet you ', reply_markup=markup_for_setting)
+
+@bot.message_handler(regexp="Изменить имя")
+def get_new_name(message):
+    msg = bot.reply_to(message,  "Какое имя?")
+    bot.register_next_step_handler(msg, new_name)
+    
+def new_name(message):
+    chat_id = message.chat.id
+    text = message.text
+    
+    if (text == u"Изменить имя"):
+        get_new_name(message)
+    elif (text == u"Изменить возраст"):
+        get_new_age(message)
+    elif (text == u"Изменить пол"):
+        get_new_sex(message)
+    elif (text == u"Назад"):
+        bots_function(message)(message)
     else:
-        bot.send_message(message.from_user.id, text=QUESTION, reply_markup=KEYBOARD)
+        name = str(text)
+        if len(name) <3 or len(name)>20:
+            msg = bot.reply_to(message, 'Имя должно быть длинее 2 и меньше 20. Повторите попытку ввода')
+            bot.register_next_step_handler(msg, new_name)
+            return
+        #user = User(name)
+        user = user_dict[chat_id] 
+        user.name = name
+        bot.send_message(chat_id, 'Nice to meet you ' + user.name )
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker(call):
-    global stut
-    if call.data == "yes": 
-        stut = True
-        stut = "Женщина"
-        bot.send_message(call.message.chat.id, f'Привет {name} ты {age} тебе {stut}', 
-                                                reply_markup=USER_MARKUP)
-    if call.data == "no":
-        stut = False
-        stut = "Мужчина"
-        bot.send_message(call.message.chat.id, f'Привет {name} ты {age} тебе {stut}', 
-                                                reply_markup=USER_MARKUP)
-    return stut
 
-@bot.message_handler(content_types = ['text'])
-def handle_text(message):
-    if message.text == 'Настройки':
-        return bo_set(message)
-    if  message.text == 'Функции бота':
-        return bots_function(message)
-    if message.text == 'Изменить имя':
-        return up_name(message)
-    if  message.text == 'Изменить возраст':
-        return up_age(message)
-    if  message.text == 'Изменить пол':
-        return up_stut(message)
-    if  message.text == 'Назад':
-        return bots_function(message)
+
+@bot.message_handler(regexp="Изменить возраст")
+def get_new_age(message):
+    msg = bot.reply_to(message, 'Повторите ввод возраста')
+    bot.register_next_step_handler(msg,new_age)
+
+def new_age(message):
     
-
+    chat_id = message.chat.id
+    age = message.text
     
+    
+    if (age ==  u"Изменить имя"):
+        get_new_name(message)
+    elif (age ==  u"Изменить возраст"):
+        get_new_age(message)
+    elif (age ==  u"Изменить пол"):
+        get_new_sex(message)
+    elif (age ==  u"Назад"):
+        bots_function(message)
+              
+    else:
+        age = str(age)
+        if not age.isdigit():
+            msg = bot.reply_to(message, 'Возраст должен быть цифрой. Повторите попытку?')
+            bot.register_next_step_handler(msg, new_age)
+            return
+        user = user_dict[chat_id] 
+        user.age = age
+        
+
+        bot.send_message(chat_id, f'Так тебе '+ user.age)
+
+
+@bot.message_handler(regexp="Изменить пол")
+def get_new_sex(message):
+ 
+    msg = bot.reply_to(message, 'Так какой пол', reply_markup=markup_for_sex)
+    bot.register_next_step_handler(msg, new_sex)
+
+def new_sex(message):
+    chat_id = message.chat.id
+    text = message.text
+    if (text ==  u'Назад в настройки'):
+        bots_setting(message)
+        return
+    if (text ==  u'Назад в функции'):
+        bots_function(message)
+        return
+    
+    if (text == u'Мужской') or (text== u'Женский'):
+        sex =  text
+        #user = User(sex)
+        user = user_dict[chat_id]
+        user.sex = sex
+    bot.send_message(chat_id, f' \n Пол: {user.sex}' )
+    #bots_function(message)
+
+
+@bot.message_handler(regexp="Назад")
+def go_to_settings(message):
+    bots_function(message)
+
+
+
+
 
 if __name__ == '__main__':
+
+# Enable saving next step handlers to file "./.handlers-saves/step.save".
+# Delay=2 means that after any change in next step handlers (e.g. calling register_next_step_handler())
+# saving will hapen after delay 2 seconds.
+    bot.enable_save_next_step_handlers(delay=6)
+
+# Load next_step_handlers from save file (default "./.handlers-saves/step.save")
+# WARNING It will work only if enable_save_next_step_handlers was called!
+    bot.load_next_step_handlers()
+
     bot.polling(none_stop=True)
