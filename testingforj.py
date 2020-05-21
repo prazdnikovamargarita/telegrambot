@@ -41,7 +41,7 @@ def process_age_step(message):
     try:
         chat_id = message.chat.id
         age = message.text
-        if not age.isdigit() or age == 0:
+        if not age.isdigit() or age == "0":
             msg = bot.reply_to(message, 'Возвраст должен быть цифрой и не равен 0. Повторите попытку')
             bot.register_next_step_handler(msg, process_age_step)
             return
@@ -75,12 +75,12 @@ def bots_function(message):
     chat_id = message.chat.id
     g = message.text
     user = user_dict[chat_id] 
-    bot.send_message(chat_id, f'Nice to meet you {user.name} \n Age: {user.age} \n Sex: {user.sex}', reply_markup=markup_for_function )
+    bot.send_message(chat_id, f'Ваше имя:{user.name} \n Возраст: {user.age} \n Пол: {user.sex}', reply_markup=markup_for_function )
 
 @bot.message_handler(regexp="Настройки")
 def bots_setting(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id , 'Nice to meet you ', reply_markup=markup_for_setting)
+    bot.send_message(chat_id , 'введите изменения', reply_markup=markup_for_setting)
 
 @bot.message_handler(regexp="Изменить имя")
 def get_new_name(message):
@@ -135,7 +135,7 @@ def new_age(message):
               
     else:
         age = str(age)
-        if not age.isdigit() age age == "0":
+        if not age.isdigit() or age == "0":
             msg = bot.reply_to(message, 'Возраст должен быть цифрой и не равен 0. Повторите попытку?')
             bot.register_next_step_handler(msg, new_age)
             return
