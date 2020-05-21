@@ -16,7 +16,7 @@ markup_for_setting.add('Назад')
 
 markup_for_sex = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True)
 markup_for_sex.add('Мужской', 'Женский')
-markup_for_sex.add('Назад в настройки', 'Назад в функции')
+markup_for_sex.add('Назад')
 
 markup = types.ReplyKeyboardMarkup(one_time_keyboard=True,  resize_keyboard=True,row_width=2 )
 markup.add('Мужской', 'Женский')

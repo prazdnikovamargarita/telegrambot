@@ -41,8 +41,8 @@ def process_age_step(message):
     try:
         chat_id = message.chat.id
         age = message.text
-        if not age.isdigit():
-            msg = bot.reply_to(message, 'Возвраст должен быть цифрой. Повторите попытку')
+        if not age.isdigit() and age == 0:
+            msg = bot.reply_to(message, 'Возвраст должен быть цифрой и не равен 0. Повторите попытку')
             bot.register_next_step_handler(msg, process_age_step)
             return
         user = user_dict[chat_id]
@@ -135,8 +135,8 @@ def new_age(message):
               
     else:
         age = str(age)
-        if not age.isdigit():
-            msg = bot.reply_to(message, 'Возраст должен быть цифрой. Повторите попытку?')
+        if not age.isdigit() and age == 0:
+            msg = bot.reply_to(message, 'Возраст должен быть цифрой и не равен 0. Повторите попытку?')
             bot.register_next_step_handler(msg, new_age)
             return
         user = user_dict[chat_id] 
@@ -155,13 +155,10 @@ def get_new_sex(message):
 def new_sex(message):
     chat_id = message.chat.id
     text = message.text
-    if (text ==  u'Назад в настройки'):
+    if (text ==  u'Назад'):
         bots_setting(message)
         return
-    if (text ==  u'Назад в функции'):
-        bots_function(message)
-        return
-    
+
     if (text == u'Мужской') or (text== u'Женский'):
         sex =  text
         #user = User(sex)
